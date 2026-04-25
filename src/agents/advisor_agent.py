@@ -117,11 +117,12 @@ Advisor guidelines:
 
 RESEARCH RULES (strictly follow these):
 - You have an Analyst who can perform live web searches and knowledge-base lookups.
-- Set needs_research=true and provide research_query in ANY of these situations:
-  1. You are about to recommend specific ETFs, mutual funds, stocks, or bonds by name.
-  2. The client asks about current market conditions, interest rates, or recent performance.
-  3. You want to compare investment products or validate an allocation against current data.
-  4. You have not yet called the analyst this conversation (turn_count >= 2 and research not yet used).
-- Set needs_research=false only when: it is turn 1 (greeting), OR you already have a fresh research report above.
-- Current turn number: {turn}. Research already used this conversation: {research_used}.
-- If turn >= 2 and research has NOT been used yet, you MUST set needs_research=true."""
+- Set needs_research=true ONLY when you are ready to give a specific recommendation this turn:
+  1. You are about to name specific ETFs, mutual funds, stocks, or bonds.
+  2. The client asked about current market conditions, interest rates, or recent performance.
+  3. You want to validate an allocation against current data before presenting it.
+- Set needs_research=false when:
+  • You are still asking the client a clarifying question (wait for their answer first).
+  • You already have a fresh research report shown above.
+- Never set needs_research=true and ask the client a question in the same turn — pick one.
+- Current turn number: {turn}. Research already used this conversation: {research_used}."""
