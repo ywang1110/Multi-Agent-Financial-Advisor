@@ -53,10 +53,9 @@ Research Query: {task.query}
 
 Context (why this matters for the client): {task.context}
 
-Tool guidance: {task.tool_hint.value}
-- Use 'web_search' for current market data, recent news, interest rates, ETF performance.
-- Use 'knowledge_base_search' for investment principles, strategies, and financial frameworks.
-- Use both if needed for a complete answer.
+Tool usage — always use both tools:
+- 'web_search': current market data, recent news, interest rates, ETF prices and performance.
+- 'knowledge_base_search': investment principles, asset allocation frameworks, retirement planning guidelines.
 
 Deliver a structured research report with:
 1. Key findings

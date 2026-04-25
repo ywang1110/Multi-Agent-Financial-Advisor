@@ -4,7 +4,7 @@ import pytest
 from langchain_core.messages import AIMessage
 
 from src.models.client_profile import DEMO_CLIENT, RiskTolerance
-from src.models.research_task import ResearchReport, ResearchTask, ResearchToolType
+from src.models.research_task import ResearchReport, ResearchTask
 
 
 def make_state(**kwargs) -> dict:
@@ -68,7 +68,6 @@ class TestAdvisorAgent:
             needs_research=kwargs.get("needs_research", False),
             research_query=kwargs.get("research_query", ""),
             research_context=kwargs.get("research_context", ""),
-            research_tool_hint=ResearchToolType.BOTH,
             is_done=kwargs.get("is_done", False),
         )
 
@@ -132,7 +131,6 @@ class TestAnalystAgent:
         task = ResearchTask(
             query="Best ETFs for moderate risk investors",
             context="Client wants ETF recommendations",
-            tool_hint=ResearchToolType.KNOWLEDGE_BASE,
         )
         state = make_state(latest_research=task)
 

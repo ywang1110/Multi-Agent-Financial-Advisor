@@ -34,7 +34,7 @@ class Settings(BaseSettings):
 
     # Conversation guardrails
     max_conversation_turns: int = Field(
-        default=10, description="Maximum conversation turns before forced termination"
+        default=5, description="Maximum conversation turns before handing off to human agent"
     )
 
 

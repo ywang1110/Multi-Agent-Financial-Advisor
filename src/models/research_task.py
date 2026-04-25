@@ -1,21 +1,10 @@
-from enum import Enum
 from pydantic import BaseModel, Field
-
-
-class ResearchToolType(str, Enum):
-    WEB_SEARCH = "web_search"
-    KNOWLEDGE_BASE = "knowledge_base"
-    BOTH = "both"
 
 
 class ResearchTask(BaseModel):
     query: str = Field(..., description="The research question for the analyst")
     context: str = Field(
         ..., description="Background context from the advisor about why this is needed"
-    )
-    tool_hint: ResearchToolType = Field(
-        default=ResearchToolType.BOTH,
-        description="Which tool(s) the analyst should prioritize",
     )
 
 

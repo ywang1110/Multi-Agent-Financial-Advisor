@@ -29,3 +29,6 @@ class ConversationState(MessagesState):
 
     # Final output
     final_summary: str
+
+    # Human handoff memo (populated when turn limit is reached)
+    handoff_summary: str
