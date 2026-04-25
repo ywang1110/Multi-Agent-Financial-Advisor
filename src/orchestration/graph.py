@@ -16,6 +16,10 @@ def _make_init_node(client_profile: ClientProfile):
     def init_state(state: ConversationState) -> dict:
         updates: dict = {}
 
+        # messages may be absent when Studio sends only client_profile
+        if not state.get("messages"):
+            updates["messages"] = []
+
         raw_profile = state.get("client_profile")
         if raw_profile is None:
             updates["client_profile"] = client_profile
