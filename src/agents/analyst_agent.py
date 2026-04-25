@@ -61,11 +61,17 @@ Deliver a structured research report with:
     def _extract_sources(self, messages: list) -> list[str]:
         sources: list[str] = []
         for msg in messages:
-            content = getattr(msg, "content", "")
-            if "URL:" in str(content):
-                for line in str(content).split("\n"):
-                    if line.strip().startswith("URL:"):
-                        url = line.replace("URL:", "").strip()
-                        if url and url not in sources:
-                            sources.append(url)
+            content = str(getattr(msg, "content", ""))
+            for line in content.split("\n"):
+                stripped = line.strip()
+                # Web search: lines like "URL: https://..."
+                if stripped.startswith("URL:"):
+                    url = stripped[len("URL:"):].strip()
+                    if url and url not in sources:
+                        sources.append(url)
+                # Knowledge base: lines like "[Source 1: asset_allocation.txt]"
+                elif stripped.startswith("[Source") and ":" in stripped and stripped.endswith("]"):
+                    kb_ref = stripped.strip("[]")
+                    if kb_ref and kb_ref not in sources:
+                        sources.append(kb_ref)
         return sources
