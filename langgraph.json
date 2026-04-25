@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "investment_advisor": "./src/orchestration/studio_entry.py:graph"
+  },
+  "env": ".env"
+}
