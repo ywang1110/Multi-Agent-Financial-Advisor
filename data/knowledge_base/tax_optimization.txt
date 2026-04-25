@@ -1,0 +1,44 @@
+TAX-EFFICIENT INVESTING
+========================
+
+TAX-LOSS HARVESTING
+--------------------
+Selling securities at a loss to offset capital gains elsewhere in the portfolio. Key rules:
+- Short-term losses offset short-term gains first (taxed as ordinary income, up to 37%).
+- Long-term losses offset long-term gains first (taxed at 0%, 15%, or 20%).
+- Excess losses can offset up to $3,000 of ordinary income per year.
+- Remaining losses carry forward indefinitely.
+- Wash-Sale Rule: Cannot repurchase the same or "substantially identical" security within 30 days before or after the sale.
+
+ASSET LOCATION STRATEGY
+------------------------
+Place the right investments in the right account types to minimize taxes:
+
+Tax-Deferred Accounts (401k, Traditional IRA): Best for high-yield bonds, REITs, actively managed funds with high turnover.
+
+Tax-Free Accounts (Roth IRA): Best for high-growth assets (small-cap stocks, growth ETFs) that benefit most from tax-free compounding.
+
+Taxable Brokerage Accounts: Best for tax-efficient investments—index funds, ETFs, municipal bonds, buy-and-hold stocks.
+
+CAPITAL GAINS TAX RATES (2024)
+--------------------------------
+Long-Term (held > 1 year):
+  - 0%: Income up to $47,025 (single) / $94,050 (married)
+  - 15%: $47,025 - $518,900 (single)
+  - 20%: Above $518,900 (single)
+
+Short-Term (held ≤ 1 year): Taxed as ordinary income (10%-37%).
+
+Net Investment Income Tax (NIIT): Additional 3.8% on investment income for high earners (>$200k single / $250k married).
+
+MUNICIPAL BONDS
+---------------
+Interest is exempt from federal taxes (and often state taxes if issued in your state). Attractive for investors in high tax brackets (32%+). Tax-equivalent yield = Muni yield / (1 - marginal tax rate).
+
+QUALIFIED DIVIDENDS
+-------------------
+Taxed at long-term capital gains rates (0%, 15%, 20%) rather than ordinary income rates. Most dividends from US corporations and qualified foreign corporations qualify.
+
+BACKDOOR ROTH IRA
+-----------------
+For high earners who exceed Roth IRA income limits: Make a non-deductible Traditional IRA contribution, then convert to Roth. Beware the pro-rata rule if you have other Traditional IRA assets.

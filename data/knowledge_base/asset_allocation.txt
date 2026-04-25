@@ -1,0 +1,37 @@
+ASSET ALLOCATION FUNDAMENTALS
+==============================
+
+Asset allocation is the process of dividing an investment portfolio among different asset categories—stocks, bonds, real estate, and cash. The goal is to balance risk and reward according to an investor's goals, risk tolerance, and investment horizon.
+
+CORE ASSET CLASSES
+------------------
+1. Equities (Stocks): Highest long-term growth potential but highest volatility. Suitable for investors with long horizons (10+ years) and moderate-to-high risk tolerance. Historical average annual return: ~10% (S&P 500, pre-inflation).
+
+2. Fixed Income (Bonds): Lower returns but more stable. Provide income and reduce portfolio volatility. Government bonds carry less risk than corporate bonds. Historical average annual return: ~4-5%.
+
+3. Real Estate: Provides inflation hedge and income (rental yield). REITs offer liquidity. Typical allocation: 5-15% of portfolio.
+
+4. Cash & Cash Equivalents: Money market funds, T-bills. Preserve capital, provide liquidity. Yields currently around 4-5% (2024 environment). Not suitable as primary long-term holding due to inflation erosion.
+
+5. Alternative Investments: Commodities, private equity, hedge funds. Generally for high-net-worth or sophisticated investors.
+
+RECOMMENDED ALLOCATIONS BY RISK PROFILE
+-----------------------------------------
+Conservative (Age 55+, low risk tolerance):
+  - 20-30% Stocks | 50-60% Bonds | 10-15% Cash | 5-10% Real Estate
+
+Moderate (Age 35-55, moderate risk tolerance):
+  - 50-60% Stocks | 30-40% Bonds | 5-10% Cash | 5-10% Real Estate
+
+Aggressive (Age 20-35, high risk tolerance):
+  - 70-85% Stocks | 10-20% Bonds | 0-5% Cash | 5-10% Real Estate
+
+AGE-BASED RULE OF THUMB
+------------------------
+A classic guideline: subtract your age from 110 to get your equity allocation percentage.
+Example: Age 38 → 110 - 38 = 72% in equities.
+Modern variants use 120 or 125 due to longer life expectancies.
+
+REBALANCING
+-----------
+Portfolios should be rebalanced annually or when any asset class drifts more than 5% from target. Rebalancing maintains the desired risk profile and enforces a buy-low/sell-high discipline.

@@ -1,0 +1,51 @@
+INVESTMENT RISK MANAGEMENT
+===========================
+
+TYPES OF INVESTMENT RISK
+-------------------------
+1. Market Risk (Systematic): Affects all investments. Cannot be diversified away. Includes economic recessions, interest rate changes, geopolitical events.
+
+2. Specific Risk (Unsystematic): Company or sector-specific. Can be reduced through diversification. Example: single stock concentration risk.
+
+3. Inflation Risk: The risk that investment returns do not keep pace with inflation. Cash and low-yield bonds are most vulnerable.
+
+4. Liquidity Risk: Inability to sell an investment quickly at fair value. Real estate and private equity carry higher liquidity risk.
+
+5. Sequence of Returns Risk: Critical in early retirement—a market downturn in the first few years of withdrawals can permanently impair a portfolio.
+
+DIVERSIFICATION STRATEGIES
+---------------------------
+- Across asset classes: Stocks + bonds + real estate + cash
+- Across geographies: US + international developed + emerging markets
+- Across sectors: Technology, healthcare, financials, consumer staples, energy, etc.
+- Across time: Dollar-cost averaging (DCA) reduces timing risk
+
+RISK METRICS
+------------
+- Standard Deviation: Measures volatility. Higher = more risk.
+- Beta: Measures sensitivity to market movements. Beta > 1 means more volatile than market.
+- Sharpe Ratio: Risk-adjusted return. Higher is better. Formula: (Return - Risk-Free Rate) / Standard Deviation.
+- Maximum Drawdown: Largest peak-to-trough decline. Important for retirement portfolios.
+
+HEDGING TECHNIQUES
+------------------
+- Bonds: Negative or low correlation with stocks during recessions.
+- Gold / Commodities: Hedge against inflation and currency debasement.
+- Options (Protective Puts): Insurance against sharp declines. Cost money but limit downside.
+- International Diversification: Different economic cycles reduce concentration.
+
+BEHAVIORAL RISK
+---------------
+The biggest risk for most investors is themselves. Common behavioral biases:
+- Loss aversion: Fear of losses causes premature selling.
+- Recency bias: Overweighting recent market performance.
+- Overconfidence: Excessive trading leading to underperformance.
+- Panic selling: Locking in losses during market corrections.
+
+Solution: Have a written Investment Policy Statement (IPS) and automate contributions.
+
+RISK CAPACITY vs RISK TOLERANCE
+---------------------------------
+Risk Tolerance: Psychological comfort with volatility (subjective).
+Risk Capacity: Financial ability to absorb losses without impacting goals (objective).
+Both must be considered. A young high-earner may have high capacity but low tolerance—and that is perfectly valid.
