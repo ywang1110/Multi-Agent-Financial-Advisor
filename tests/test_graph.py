@@ -23,17 +23,19 @@ class TestRouteAfterAdvisor:
         state = make_state(needs_research=True)
         assert route_after_advisor(state) == "analyst"
 
-    def test_routes_to_end_when_conversation_done(self):
+    def test_routes_to_client_even_when_final_summary_set(self):
+        # Advisor sets final_summary but Client must still confirm satisfaction
         state = make_state(final_summary="Here is your final plan.")
-        assert route_after_advisor(state) == END
+        assert route_after_advisor(state) == "client"
 
     def test_routes_to_client_by_default(self):
         state = make_state()
         assert route_after_advisor(state) == "client"
 
-    def test_final_summary_takes_priority_over_research(self):
+    def test_research_takes_priority_over_final_summary(self):
+        # needs_research wins — analyst is called even if advisor marked is_done
         state = make_state(needs_research=True, final_summary="Done.")
-        assert route_after_advisor(state) == END
+        assert route_after_advisor(state) == "analyst"
 
 
 class TestRouteAfterClient:

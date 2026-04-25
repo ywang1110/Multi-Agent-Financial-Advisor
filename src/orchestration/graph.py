@@ -47,12 +47,9 @@ def _make_init_node(client_profile: ClientProfile):
 def route_after_advisor(state: ConversationState) -> str:
     """
     Decides next node after the Advisor speaks.
-    - Conversation concluded  → END
-    - Research needed         → analyst
-    - Otherwise               → client
+    - Research needed → analyst
+    - Otherwise       → client (Client always gets the final say on satisfaction)
     """
-    if state.get("final_summary"):
-        return END
     if state.get("needs_research"):
         return "analyst"
     return "client"

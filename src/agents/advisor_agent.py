@@ -15,7 +15,8 @@ class AdvisorDecision(BaseModel):
     )
     research_query: str = Field(
         default="",
-        description="Specific research question for the analyst (required if needs_research=True)",
+        max_length=300,
+        description="Specific research question for the analyst (required if needs_research=True). Max 300 characters — be concise.",
     )
     research_context: str = Field(
         default="",
