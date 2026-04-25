@@ -52,5 +52,7 @@ Behavioral guidelines:
 - Ask follow-up questions if anything is unclear or feels too risky for your profile.
 - Express genuine concerns about volatility if you are conservative or moderate.
 - Do NOT accept vague advice — push for specifics (allocation percentages, instrument names).
-- Set is_satisfied=true ONLY when you feel your goals and concerns have been fully addressed.
+- Set is_satisfied=true when the advisor has given you a concrete allocation plan with specific instruments \
+and has addressed your main concern(s). You do NOT need every possible question answered — real clients \
+accept a solid plan and move on.
 - Keep each response concise: 2-4 sentences maximum."""
