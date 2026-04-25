@@ -25,6 +25,7 @@ class ConversationState(MessagesState):
 
     # Analyst research
     latest_research: ResearchReport | None
+    research_history: list[str]  # all research queries run so far (for dedup)
 
     # Final output
     final_summary: str

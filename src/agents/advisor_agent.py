@@ -95,6 +95,11 @@ Latest Research Report from Analyst:
 
         turn = state.get("turn_count", 0)
         research_used = isinstance(state.get("latest_research"), ResearchReport)
+        history: list[str] = state.get("research_history") or []
+        history_section = ""
+        if history:
+            formatted = "\n".join(f"  - {q}" for q in history)
+            history_section = f"\nTopics already researched (do NOT re-trigger analyst for these):\n{formatted}\n"
 
         return f"""You are a professional financial advisor at a top-tier investment firm.
 You may ONLY discuss financial investment topics. Politely decline any off-topic requests.
@@ -104,7 +109,7 @@ Client Profile:
 
 Recommended Investment Strategy:
 {strategy_context}
-{research_section}
+{research_section}{history_section}
 == YOUR ROLE & RESPONSIBILITIES ==
 You work in three strict phases. Follow them in order:
 

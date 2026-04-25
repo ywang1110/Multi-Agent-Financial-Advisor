@@ -34,6 +34,8 @@ def _make_init_node(client_profile: ClientProfile):
             updates["needs_research"] = False
         if state.get("latest_research") is None:
             updates["latest_research"] = None
+        if state.get("research_history") is None:
+            updates["research_history"] = []
         if not state.get("final_summary"):
             updates["final_summary"] = ""
         return updates
@@ -121,5 +123,6 @@ def get_initial_state(client_profile: ClientProfile) -> dict:
         "is_satisfied": False,
         "needs_research": False,
         "latest_research": None,
+        "research_history": [],
         "final_summary": "",
     }

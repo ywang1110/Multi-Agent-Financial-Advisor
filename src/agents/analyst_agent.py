@@ -39,7 +39,12 @@ class AnalystAgent(BaseAgent):
             sources=sources,
             confidence=0.9,
         )
-        return {"latest_research": report}
+
+        # Record this query so the Advisor can avoid re-researching it
+        history: list[str] = list(state.get("research_history") or [])
+        history.append(task.query)
+
+        return {"latest_research": report, "research_history": history}
 
     def _build_research_prompt(self, task: ResearchTask) -> str:
         return f"""You are a financial research analyst. Complete the following research task thoroughly.
