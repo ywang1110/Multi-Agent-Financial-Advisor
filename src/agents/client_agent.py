@@ -1,0 +1,49 @@
+from langchain_core.messages import HumanMessage, SystemMessage
+from pydantic import BaseModel, Field
+
+from src.agents.base_agent import BaseAgent
+from src.models.client_profile import ClientProfile
+from src.models.state import ConversationState
+
+
+class ClientOutput(BaseModel):
+    message: str = Field(description="Client's natural language response to the advisor")
+    is_satisfied: bool = Field(
+        description="True only when the advisor has fully addressed the client's goals"
+    )
+
+
+class ClientAgent(BaseAgent):
+    """
+    Simulates a real human client using an LLM persona.
+    In production this node would be replaced by a human-in-the-loop UI.
+    """
+
+    def __init__(self, profile: ClientProfile) -> None:
+        super().__init__()
+        self._profile = profile
+        self._structured_llm = self._llm.with_structured_output(ClientOutput)
+
+    def run(self, state: ConversationState) -> dict:
+        system = SystemMessage(content=self._build_system_prompt())
+        response: ClientOutput = self._structured_llm.invoke(
+            [system] + state["messages"]
+        )
+        return {
+            "messages": [HumanMessage(content=response.message, name="client")],
+            "is_satisfied": response.is_satisfied,
+            "turn_count": state["turn_count"] + 1,
+        }
+
+    def _build_system_prompt(self) -> str:
+        return f"""You are {self._profile.name}, a real person seeking financial investment advice. \
+Respond naturally in first person based on your profile below.
+
+{self._profile.to_summary()}
+
+Behavioral guidelines:
+- Ask follow-up questions if anything is unclear or feels too risky for your profile.
+- Express genuine concerns about volatility if you are conservative or moderate.
+- Do NOT accept vague advice — push for specifics (allocation percentages, instrument names).
+- Set is_satisfied=true ONLY when you feel your goals and concerns have been fully addressed.
+- Keep each response concise: 2-4 sentences maximum."""
