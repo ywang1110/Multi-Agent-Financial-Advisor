@@ -20,6 +20,12 @@ def make_state(**kwargs) -> dict:
 
 
 class TestClientAgent:
+    def _patch_guardrail_llm(self, verdict: str = "YES"):
+        """Patch the input guardrail LLM used inside ClientAgent.run()."""
+        mock_guardrail_llm = MagicMock()
+        mock_guardrail_llm.invoke.return_value = AIMessage(content=verdict)
+        return patch("src.guardrails.validators.ChatOpenAI", return_value=mock_guardrail_llm)
+
     def test_run_returns_message_and_satisfied_false(self):
         from src.agents.client_agent import ClientAgent, ClientOutput
 
@@ -27,7 +33,7 @@ class TestClientAgent:
             message="I am concerned about the bond allocation.",
             is_satisfied=False,
         )
-        with patch("src.agents.base_agent.ChatOpenAI") as MockLLM:
+        with patch("src.agents.base_agent.ChatOpenAI") as MockLLM, self._patch_guardrail_llm():
             mock_llm = MagicMock()
             mock_llm.with_structured_output.return_value.invoke.return_value = mock_output
             MockLLM.return_value = mock_llm
@@ -48,7 +54,7 @@ class TestClientAgent:
             message="Thank you, I am fully satisfied with the plan.",
             is_satisfied=True,
         )
-        with patch("src.agents.base_agent.ChatOpenAI") as MockLLM:
+        with patch("src.agents.base_agent.ChatOpenAI") as MockLLM, self._patch_guardrail_llm():
             mock_llm = MagicMock()
             mock_llm.with_structured_output.return_value.invoke.return_value = mock_output
             MockLLM.return_value = mock_llm
@@ -71,11 +77,17 @@ class TestAdvisorAgent:
             is_done=kwargs.get("is_done", False),
         )
 
+    def _patch_guardrail_llm(self):
+        """Returns a context manager that patches OffTopicGuardrail's LLM with YES verdict."""
+        mock_guardrail_llm = MagicMock()
+        mock_guardrail_llm.invoke.return_value = AIMessage(content="YES")
+        return patch("src.guardrails.validators.ChatOpenAI", return_value=mock_guardrail_llm)
+
     def test_run_returns_message(self):
         from src.agents.advisor_agent import AdvisorAgent
 
         mock_decision = self._make_mock_decision()
-        with patch("src.agents.base_agent.ChatOpenAI") as MockLLM:
+        with patch("src.agents.base_agent.ChatOpenAI") as MockLLM, self._patch_guardrail_llm():
             mock_llm = MagicMock()
             mock_llm.with_structured_output.return_value.invoke.return_value = mock_decision
             MockLLM.return_value = mock_llm
@@ -95,7 +107,7 @@ class TestAdvisorAgent:
             research_query="Current S&P 500 performance",
             research_context="Client wants to know about market conditions",
         )
-        with patch("src.agents.base_agent.ChatOpenAI") as MockLLM:
+        with patch("src.agents.base_agent.ChatOpenAI") as MockLLM, self._patch_guardrail_llm():
             mock_llm = MagicMock()
             mock_llm.with_structured_output.return_value.invoke.return_value = mock_decision
             MockLLM.return_value = mock_llm
@@ -113,7 +125,7 @@ class TestAdvisorAgent:
             message="Here is your final plan.",
             is_done=True,
         )
-        with patch("src.agents.base_agent.ChatOpenAI") as MockLLM:
+        with patch("src.agents.base_agent.ChatOpenAI") as MockLLM, self._patch_guardrail_llm():
             mock_llm = MagicMock()
             mock_llm.with_structured_output.return_value.invoke.return_value = mock_decision
             MockLLM.return_value = mock_llm

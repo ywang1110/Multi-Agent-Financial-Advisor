@@ -2,6 +2,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel, Field
 
 from src.agents.base_agent import BaseAgent
+from src.guardrails.validators import build_input_guardrails
 from src.models.client_profile import ClientProfile
 from src.models.state import ConversationState
 
@@ -29,8 +30,14 @@ class ClientAgent(BaseAgent):
         response: ClientOutput = self._structured_llm.invoke(
             [system] + state["messages"]
         )
+
+        # Apply input guardrails to the client's outgoing message
+        guardrail_chain = build_input_guardrails()
+        guardrail_result = guardrail_chain.handle(response.message)
+        final_message = guardrail_result.content if guardrail_result.passed else guardrail_result.reason
+
         return {
-            "messages": [HumanMessage(content=response.message, name="client")],
+            "messages": [HumanMessage(content=final_message, name="client")],
             "is_satisfied": response.is_satisfied,
             "turn_count": state["turn_count"] + 1,
         }

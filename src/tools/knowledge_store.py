@@ -47,14 +47,30 @@ class KnowledgeRepository:
         )
         return splitter.split_documents(docs)
 
-    def initialize(self) -> None:
-        """Load documents into ChromaDB. Skips if collection already exists."""
-        if os.path.exists(self._persist_dir):
-            self._vectorstore = Chroma(
+    def _try_load_existing(self) -> bool:
+        """
+        Attempt to open an existing ChromaDB at the persist directory.
+        Returns True on success, False if the store is missing or corrupted.
+        """
+        if not os.path.exists(self._persist_dir):
+            return False
+        try:
+            store = Chroma(
                 collection_name=self._collection_name,
                 embedding_function=self._embeddings,
                 persist_directory=self._persist_dir,
             )
+            # Confirm the collection actually contains data
+            if store._collection.count() > 0:
+                self._vectorstore = store
+                return True
+        except Exception:
+            pass
+        return False
+
+    def initialize(self) -> None:
+        """Load documents into ChromaDB. Skips if a valid collection already exists."""
+        if self._try_load_existing():
             return
 
         documents = self._load_documents()

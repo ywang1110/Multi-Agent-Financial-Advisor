@@ -2,6 +2,9 @@ import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_openai import ChatOpenAI
+
 from src.config.settings import get_settings
 
 DISCLAIMER = (
@@ -10,12 +13,6 @@ DISCLAIMER = (
     "constitute personalized financial, legal, or tax advice. Please consult a "
     "licensed financial advisor before making investment decisions."
 )
-
-OFF_TOPIC_KEYWORDS = [
-    "recipe", "weather", "sports", "celebrity", "movie", "music",
-    "game", "dating", "health diagnosis", "medical advice", "drug",
-    "political", "religion", "hack", "illegal",
-]
 
 PII_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"\b\d{3}-\d{2}-\d{4}\b"), "[SSN REDACTED]"),
@@ -70,18 +67,35 @@ class TurnLimitGuardrail(BaseGuardrail):
 
 
 class OffTopicGuardrail(BaseGuardrail):
-    """Rejects messages that are clearly unrelated to finance."""
+    """
+    Rejects messages unrelated to finance using LLM semantic classification.
+    More robust than keyword matching — handles paraphrasing and avoids false positives.
+    """
+
+    _SYSTEM_PROMPT = (
+        "You are a content classifier for a financial investment advisory system. "
+        "Decide if the message is related to financial investment, personal finance, "
+        "portfolio management, or wealth management.\n"
+        "Reply with exactly one word: YES if finance-related, NO if not."
+    )
+
+    def __init__(self, next_guardrail: "BaseGuardrail | None" = None) -> None:
+        super().__init__(next_guardrail)
+        settings = get_settings()
+        self._llm = ChatOpenAI(model=settings.llm_model, temperature=0, max_tokens=10)
 
     def check(self, content: str) -> GuardrailResult:
-        lower = content.lower()
-        for keyword in OFF_TOPIC_KEYWORDS:
-            if keyword in lower:
-                return GuardrailResult(
-                    passed=False,
-                    content=content,
-                    reason=f"Off-topic content detected (keyword: '{keyword}'). "
-                           "This system only handles financial investment topics.",
-                )
+        response = self._llm.invoke([
+            SystemMessage(content=self._SYSTEM_PROMPT),
+            HumanMessage(content=content),
+        ])
+        verdict = response.content.strip().lower()
+        if "no" in verdict:
+            return GuardrailResult(
+                passed=False,
+                content=content,
+                reason="Off-topic content detected. This system only handles financial investment topics.",
+            )
         return GuardrailResult(passed=True, content=content)
 
 

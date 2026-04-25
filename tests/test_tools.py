@@ -82,6 +82,61 @@ class TestKnowledgeBaseSearch:
         with pytest.raises(RuntimeError, match="not initialized"):
             repo.query("test query")
 
+    def test_initialize_rebuilds_when_existing_store_corrupted(self, tmp_path):
+        """If the persist directory exists but Chroma raises on open, rebuild from docs."""
+        from src.tools.knowledge_store import KnowledgeRepository
+
+        with (
+            patch("src.tools.knowledge_store.get_settings") as mock_settings,
+            patch("src.tools.knowledge_store.Chroma") as MockChroma,
+            patch("src.tools.knowledge_store.OpenAIEmbeddings"),
+        ):
+            settings = MagicMock()
+            settings.chroma_persist_dir = str(tmp_path)
+            settings.chroma_collection_name = "test_col"
+            settings.openai_api_key = "test-key"
+            mock_settings.return_value = settings
+
+            # First Chroma() call (try_load_existing) raises to simulate corruption
+            mock_store = MagicMock()
+            mock_store._collection.count.return_value = 0
+            MockChroma.return_value = mock_store
+            MockChroma.from_documents = MagicMock()
+
+            repo = KnowledgeRepository()
+            mock_doc = MagicMock()
+            with patch.object(repo, "_load_documents", return_value=[mock_doc]):
+                with patch.object(repo, "_chunk_documents", return_value=[mock_doc]):
+                    repo.initialize()
+
+            MockChroma.from_documents.assert_called_once()
+
+    def test_initialize_skips_rebuild_when_store_has_documents(self, tmp_path):
+        """If the persist directory exists and the collection has data, skip rebuild."""
+        from src.tools.knowledge_store import KnowledgeRepository
+
+        with (
+            patch("src.tools.knowledge_store.get_settings") as mock_settings,
+            patch("src.tools.knowledge_store.Chroma") as MockChroma,
+            patch("src.tools.knowledge_store.OpenAIEmbeddings"),
+        ):
+            settings = MagicMock()
+            settings.chroma_persist_dir = str(tmp_path)
+            settings.chroma_collection_name = "test_col"
+            settings.openai_api_key = "test-key"
+            mock_settings.return_value = settings
+
+            mock_store = MagicMock()
+            mock_store._collection.count.return_value = 10
+            MockChroma.return_value = mock_store
+            MockChroma.from_documents = MagicMock()
+
+            repo = KnowledgeRepository()
+            repo.initialize()
+
+            # from_documents must NOT be called since the store is healthy
+            MockChroma.from_documents.assert_not_called()
+
 
 class TestGetAnalystTools:
     def test_returns_two_tools(self):
