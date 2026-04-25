@@ -26,7 +26,9 @@ class ClientAgent(BaseAgent):
         self._structured_llm = self._llm.with_structured_output(ClientOutput)
 
     def run(self, state: ConversationState) -> dict:
-        system = SystemMessage(content=self._build_system_prompt())
+        # Always use the profile from state so Studio-submitted profiles override the default
+        profile = state["client_profile"]
+        system = SystemMessage(content=self._build_system_prompt(profile))
         response: ClientOutput = self._structured_llm.invoke(
             [system] + state["messages"]
         )
@@ -42,11 +44,11 @@ class ClientAgent(BaseAgent):
             "turn_count": state["turn_count"] + 1,
         }
 
-    def _build_system_prompt(self) -> str:
-        return f"""You are {self._profile.name}, a real person seeking financial investment advice. \
+    def _build_system_prompt(self, profile: ClientProfile) -> str:
+        return f"""You are {profile.name}, a real person seeking financial investment advice. \
 Respond naturally in first person based on your profile below.
 
-{self._profile.to_summary()}
+{profile.to_summary()}
 
 Behavioral guidelines:
 - Ask follow-up questions if anything is unclear or feels too risky for your profile.
