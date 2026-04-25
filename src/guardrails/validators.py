@@ -96,10 +96,12 @@ class PIIScrubbingGuardrail(BaseGuardrail):
 
 
 class DisclaimerGuardrail(BaseGuardrail):
-    """Appends a regulatory disclaimer to all advisor-facing outputs."""
+    """Appends a regulatory disclaimer to all advisor-facing outputs.
+    Skips if any disclaimer is already present (e.g. added by the LLM itself).
+    """
 
     def check(self, content: str) -> GuardrailResult:
-        if DISCLAIMER.strip() not in content:
+        if "disclaimer" not in content.lower():
             content = content + DISCLAIMER
         return GuardrailResult(passed=True, content=content)
 
