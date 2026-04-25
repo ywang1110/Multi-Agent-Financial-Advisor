@@ -44,17 +44,18 @@ class TestRouteAfterClient:
         state = make_state(is_satisfied=True, turn_count=3)
         assert route_after_client(state) == END
 
-    def test_routes_to_end_when_turn_limit_reached(self, monkeypatch):
+    def test_routes_to_handoff_when_turn_limit_reached(self, monkeypatch):
         monkeypatch.setenv("MAX_CONVERSATION_TURNS", "10")
         state = make_state(is_satisfied=False, turn_count=10)
-        assert route_after_client(state) == END
+        assert route_after_client(state) == "handoff"
 
     def test_routes_to_advisor_when_not_satisfied(self, monkeypatch):
         monkeypatch.setenv("MAX_CONVERSATION_TURNS", "10")
         state = make_state(is_satisfied=False, turn_count=3)
         assert route_after_client(state) == "advisor"
 
-    def test_routes_to_end_when_satisfied_at_turn_limit(self, monkeypatch):
+    def test_routes_to_handoff_when_satisfied_at_turn_limit(self, monkeypatch):
+        # Turn limit takes priority over is_satisfied — always route to handoff
         monkeypatch.setenv("MAX_CONVERSATION_TURNS", "10")
         state = make_state(is_satisfied=True, turn_count=10)
-        assert route_after_client(state) == END
+        assert route_after_client(state) == "handoff"

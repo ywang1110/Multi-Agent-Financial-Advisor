@@ -1,9 +1,9 @@
-from langchain_core.messages import AIMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from pydantic import BaseModel, Field
 
 from src.agents.base_agent import BaseAgent
 from src.guardrails.validators import build_advisor_output_guardrails
-from src.models.research_task import ResearchReport, ResearchTask, ResearchToolType
+from src.models.research_task import ResearchReport, ResearchTask
 from src.models.state import ConversationState
 from src.strategies.investment_strategy import StrategyFactory
 
@@ -21,10 +21,6 @@ class AdvisorDecision(BaseModel):
     research_context: str = Field(
         default="",
         description="Why this research is needed — context for the analyst",
-    )
-    research_tool_hint: ResearchToolType = Field(
-        default=ResearchToolType.BOTH,
-        description="Which tool the analyst should prioritize",
     )
     is_done: bool = Field(
         description="True when the conversation has reached a satisfactory conclusion"
@@ -63,7 +59,6 @@ class AdvisorAgent(BaseAgent):
                 f"\n[Advisor → needs_research=True]\n"
                 f"  Query  : {decision.research_query}\n"
                 f"  Reason : {decision.research_context}\n"
-                f"  Tool   : {decision.research_tool_hint}\n"
             )
         else:
             print(f"\n[Advisor → needs_research=False] No research needed this turn.\n")
@@ -77,13 +72,60 @@ class AdvisorAgent(BaseAgent):
             updates["latest_research"] = ResearchTask(
                 query=decision.research_query,
                 context=decision.research_context,
-                tool_hint=decision.research_tool_hint,
             )
 
         if decision.is_done:
             updates["final_summary"] = final_message
 
         return updates
+
+    def generate_handoff(self, state: ConversationState) -> dict:
+        """
+        Called when the turn limit is reached.
+        Produces a structured handoff memo for the human agent taking over.
+        """
+        profile = state["client_profile"]
+        history: list[str] = state.get("research_history") or []
+        research_done = "\n".join(f"  - {q}" for q in history) if history else "  - None"
+
+        conversation_text = "\n".join(
+            f"{m.type.upper()} ({getattr(m, 'name', m.type)}): {m.content}"
+            for m in state.get("messages", [])
+        )
+
+        prompt = f"""You are summarizing a financial advisory conversation for a human advisor who will take over.
+
+Client Profile:
+{profile.to_summary()}
+
+Full Conversation:
+{conversation_text}
+
+Research topics already covered by the AI analyst:
+{research_done}
+
+Write a concise handoff memo with these exact sections:
+1. CLIENT SNAPSHOT — one sentence on goals, risk tolerance, horizon
+2. KEY CONCERNS RAISED — bullet list of what the client worried about or emphasized
+3. RECOMMENDATIONS DISCUSSED — specific allocations or instruments already proposed
+4. OPEN QUESTIONS — what the client still needs answered
+5. SUGGESTED NEXT STEPS — concrete actions for the human advisor
+
+Be specific. Use numbers and names from the conversation. Do not use generic filler."""
+
+        memo = self._llm.invoke([HumanMessage(content=prompt)]).content.strip()
+
+        handoff_message = (
+            f"Thank you for sharing so much detail about your situation, {profile.name.split()[0]}. "
+            "Your goals deserve more dedicated, personalised attention than I can provide here. "
+            "I'm connecting you with one of our senior advisors who will review everything we've discussed "
+            "and work with you one-on-one to build a tailored plan. You'll hear from them shortly."
+        )
+
+        return {
+            "messages": [AIMessage(content=handoff_message, name="advisor")],
+            "handoff_summary": memo,
+        }
 
     def _build_system_prompt(self, state: ConversationState, strategy_context: str) -> str:
         profile = state["client_profile"]
@@ -138,10 +180,10 @@ PHASE 3 — RECOMMENDATION (after research report is available):
     Do NOT re-research topics already covered in the report above.
 
 == CURRENT STATE ==
-Turn: {turn} | Research done: {research_used}
-{"→ PHASE 1: Keep gathering information. Do not trigger the analyst yet." if not research_used and turn < 2 else ""}
+{"→ PHASE 1: Keep gathering information. Ask ONE clarifying question. Do not trigger the analyst yet." if not research_used and turn < 2 else ""}
 {"→ PHASE 2: You have enough context — trigger the Analyst now (needs_research=True)." if not research_used and turn >= 2 else ""}
 {"→ PHASE 3: Deliver recommendations grounded in the research report. Re-trigger analyst only for genuinely new topics the client raises." if research_used else ""}
+IMPORTANT: Never mention session limits, turn counts, or that the conversation will end. Do NOT hint that a handoff is coming.
 
 == STYLE RULES ==
 - Keep responses under 3 short paragraphs. Conversational, not formal.

@@ -38,6 +38,8 @@ def _make_init_node(client_profile: ClientProfile):
             updates["research_history"] = []
         if not state.get("final_summary"):
             updates["final_summary"] = ""
+        if not state.get("handoff_summary"):
+            updates["handoff_summary"] = ""
         return updates
     return init_state
 
@@ -59,15 +61,16 @@ def route_after_client(state: ConversationState) -> str:
     """
     Decides next node after the Client responds.
     - Client satisfied        → END
-    - Turn limit hit          → END
+    - Turn limit hit          → handoff (human agent takeover)
     - Otherwise               → advisor
     """
     settings = get_settings()
     turn_count = state.get("turn_count", 0)
 
-    if state.get("is_satisfied"):
-        return END
+    # Turn limit takes absolute priority — even if client says satisfied
     if turn_count >= settings.max_conversation_turns:
+        return "handoff"
+    if state.get("is_satisfied"):
         return END
     return "advisor"
 
@@ -94,6 +97,7 @@ def build_graph(client_profile: ClientProfile) -> CompiledGraph:
     builder.add_node("advisor", advisor_agent.run)
     builder.add_node("analyst", analyst_agent.run)
     builder.add_node("client", client_agent.run)
+    builder.add_node("handoff", advisor_agent.generate_handoff)
 
     # Entry point: always run init first to populate defaults
     builder.add_edge(START, "init")
@@ -107,6 +111,9 @@ def build_graph(client_profile: ClientProfile) -> CompiledGraph:
 
     # Client → conditional routing
     builder.add_conditional_edges("client", route_after_client)
+
+    # Handoff → always END after generating the memo
+    builder.add_edge("handoff", END)
 
     return builder.compile()
 
@@ -122,4 +129,5 @@ def get_initial_state(client_profile: ClientProfile) -> dict:
         "latest_research": None,
         "research_history": [],
         "final_summary": "",
+        "handoff_summary": "",
     }
