@@ -93,25 +93,32 @@ class AdvisorAgent(BaseAgent):
             for m in state.get("messages", [])
         )
 
-        prompt = f"""You are summarizing a financial advisory conversation for a human advisor who will take over.
+        prompt = f"""You are preparing a briefing note for a human financial advisor who is taking over this client.
+Be extremely concise. Every line must be actionable or factual — no filler, no repetition.
 
-Client Profile:
-{profile.to_summary()}
+CLIENT: {profile.name} | Age {profile.age} | Income ${profile.annual_income_usd:,} | Assets ${profile.total_assets_usd:,} | Risk: {profile.risk_tolerance} | Horizon: {profile.investment_horizon_years}yr
 
-Full Conversation:
+Conversation so far:
 {conversation_text}
 
-Research topics already covered by the AI analyst:
+Research already run by AI analyst:
 {research_done}
 
-Write a concise handoff memo with these exact sections:
-1. CLIENT SNAPSHOT — one sentence on goals, risk tolerance, horizon
-2. KEY CONCERNS RAISED — bullet list of what the client worried about or emphasized
-3. RECOMMENDATIONS DISCUSSED — specific allocations or instruments already proposed
-4. OPEN QUESTIONS — what the client still needs answered
-5. SUGGESTED NEXT STEPS — concrete actions for the human advisor
+Write the briefing in this exact format (keep each section to 2-4 bullet points max):
 
-Be specific. Use numbers and names from the conversation. Do not use generic filler."""
+PRIORITY CONCERNS
+• [what the client is most worried about, with specifics]
+
+RECOMMENDATIONS MADE
+• [exact allocations/tickers/percentages already discussed]
+
+UNRESOLVED QUESTIONS
+• [what the client still wants answered]
+
+IMMEDIATE ACTIONS FOR ADVISOR
+• [specific next steps, ordered by urgency]
+
+Rules: use real numbers and names from the conversation. No generic statements. Max 200 words total."""
 
         memo = self._llm.invoke([HumanMessage(content=prompt)]).content.strip()
 
