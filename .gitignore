@@ -20,6 +20,9 @@ data/chroma_db/
 .coverage
 htmlcov/
 
+# Chinese documentation (internal only)
+docs_cn/
+
 # macOS
 .DS_Store
 
