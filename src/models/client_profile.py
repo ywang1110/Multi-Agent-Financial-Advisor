@@ -65,21 +65,4 @@ class ClientProfile(BaseModel):
         )
 
 
-# Dummy client profile for demo purposes
-DEMO_CLIENT = ClientProfile(
-    name="Sarah Chen",
-    age=38,
-    annual_income_usd=185_000,
-    total_assets_usd=620_000,
-    total_liabilities_usd=180_000,
-    risk_tolerance=RiskTolerance.MODERATE,
-    investment_goals=[InvestmentGoal.RETIREMENT, InvestmentGoal.WEALTH_GROWTH],
-    investment_horizon_years=25,
-    current_holdings=[
-        Holding(asset_name="S&P 500 Index Fund", asset_type="ETF", value_usd=180_000, allocation_pct=40.0),
-        Holding(asset_name="US Treasury Bonds", asset_type="bond", value_usd=90_000, allocation_pct=20.0),
-        Holding(asset_name="Apple Inc.", asset_type="stock", value_usd=67_500, allocation_pct=15.0),
-        Holding(asset_name="Real Estate (Rental)", asset_type="real_estate", value_usd=112_500, allocation_pct=25.0),
-    ],
-    additional_notes="Sarah is a senior software engineer. She is concerned about market volatility and prefers a balanced approach. She has a mortgage on her primary residence.",
-)
+

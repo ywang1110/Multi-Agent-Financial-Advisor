@@ -7,11 +7,12 @@ from src.models.client_profile import ClientProfile
 from src.models.state import ConversationState
 
 
-def _make_init_node(client_profile: ClientProfile):
+def _make_init_node(client_profile: ClientProfile | None = None):
     """
     Returns a node function that injects default values into state.
     Also coerces client_profile from dict → ClientProfile when the state
     arrives via the LangGraph API (Studio serializes it as a plain dict).
+    If client_profile is None, the profile must be supplied in the input state.
     """
     def init_state(state: ConversationState) -> dict:
         updates: dict = {}
@@ -21,7 +22,7 @@ def _make_init_node(client_profile: ClientProfile):
             updates["messages"] = []
 
         raw_profile = state.get("client_profile")
-        if raw_profile is None:
+        if raw_profile is None and client_profile is not None:
             updates["client_profile"] = client_profile
         elif isinstance(raw_profile, dict):
             updates["client_profile"] = ClientProfile(**raw_profile)
@@ -104,15 +105,42 @@ def build_graph(client_profile: ClientProfile) -> CompiledGraph:
     builder.add_edge("init", "advisor")
 
     # Advisor → conditional routing
-    builder.add_conditional_edges("advisor", route_after_advisor)
+    builder.add_conditional_edges("advisor", route_after_advisor, ["analyst", "client"])
 
     # Analyst always returns to advisor (with research results in state)
     builder.add_edge("analyst", "advisor")
 
     # Client → conditional routing
-    builder.add_conditional_edges("client", route_after_client)
+    builder.add_conditional_edges("client", route_after_client, ["advisor", "handoff", END])
 
     # Handoff → always END after generating the memo
+    builder.add_edge("handoff", END)
+
+    return builder.compile()
+
+
+def build_graph_no_profile() -> CompiledGraph:
+    """
+    Studio entry point: graph with no hardcoded profile.
+    The client_profile must be supplied in the input state at runtime.
+    """
+    advisor_agent = AgentFactory.create_advisor_agent()
+    analyst_agent = AgentFactory.create_analyst_agent()
+    client_agent = AgentFactory.create_client_agent(profile=None)
+
+    builder = StateGraph(ConversationState)
+
+    builder.add_node("init", _make_init_node())
+    builder.add_node("advisor", advisor_agent.run)
+    builder.add_node("analyst", analyst_agent.run)
+    builder.add_node("client", client_agent.run)
+    builder.add_node("handoff", advisor_agent.generate_handoff)
+
+    builder.add_edge(START, "init")
+    builder.add_edge("init", "advisor")
+    builder.add_conditional_edges("advisor", route_after_advisor, ["analyst", "client"])
+    builder.add_edge("analyst", "advisor")
+    builder.add_conditional_edges("client", route_after_client, ["advisor", "handoff", END])
     builder.add_edge("handoff", END)
 
     return builder.compile()

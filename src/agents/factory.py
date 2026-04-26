@@ -12,7 +12,7 @@ class AgentFactory:
     """
 
     @staticmethod
-    def create_client_agent(profile: ClientProfile) -> ClientAgent:
+    def create_client_agent(profile: ClientProfile | None = None) -> ClientAgent:
         return ClientAgent(profile=profile)
 
     @staticmethod

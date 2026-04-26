@@ -1,15 +1,25 @@
 import pytest
 from langgraph.graph import END
 
-from src.models.client_profile import DEMO_CLIENT
+from src.models.client_profile import ClientProfile, RiskTolerance, InvestmentGoal
 from src.orchestration.graph import route_after_advisor, route_after_client
+
+_TEST_CLIENT = ClientProfile(
+    name="Test User",
+    age=40,
+    annual_income_usd=100_000,
+    total_assets_usd=500_000,
+    risk_tolerance=RiskTolerance.MODERATE,
+    investment_goals=[InvestmentGoal.RETIREMENT],
+    investment_horizon_years=20,
+)
 
 
 def make_state(**kwargs) -> dict:
     """Helper: build a minimal state dict with sensible defaults."""
     return {
         "messages": [],
-        "client_profile": DEMO_CLIENT,
+        "client_profile": _TEST_CLIENT,
         "turn_count": kwargs.get("turn_count", 0),
         "is_satisfied": kwargs.get("is_satisfied", False),
         "needs_research": kwargs.get("needs_research", False),

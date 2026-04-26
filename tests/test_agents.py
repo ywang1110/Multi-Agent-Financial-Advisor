@@ -3,14 +3,25 @@ from unittest.mock import MagicMock, patch
 import pytest
 from langchain_core.messages import AIMessage
 
-from src.models.client_profile import DEMO_CLIENT, RiskTolerance
+from src.models.client_profile import ClientProfile, RiskTolerance, InvestmentGoal, Holding
 from src.models.research_task import ResearchReport, ResearchTask
+
+_TEST_CLIENT = ClientProfile(
+    name="Sarah Chen",
+    age=38,
+    annual_income_usd=185_000,
+    total_assets_usd=620_000,
+    total_liabilities_usd=180_000,
+    risk_tolerance=RiskTolerance.MODERATE,
+    investment_goals=[InvestmentGoal.RETIREMENT, InvestmentGoal.WEALTH_GROWTH],
+    investment_horizon_years=25,
+)
 
 
 def make_state(**kwargs) -> dict:
     return {
         "messages": [AIMessage(content="Hello, how can I help?", name="advisor")],
-        "client_profile": DEMO_CLIENT,
+        "client_profile": _TEST_CLIENT,
         "turn_count": kwargs.get("turn_count", 0),
         "is_satisfied": kwargs.get("is_satisfied", False),
         "needs_research": kwargs.get("needs_research", False),
@@ -38,7 +49,7 @@ class TestClientAgent:
             mock_llm.with_structured_output.return_value.invoke.return_value = mock_output
             MockLLM.return_value = mock_llm
 
-            agent = ClientAgent(profile=DEMO_CLIENT)
+            agent = ClientAgent(profile=_TEST_CLIENT)
             result = agent.run(make_state())
 
         assert len(result["messages"]) == 1
@@ -59,7 +70,7 @@ class TestClientAgent:
             mock_llm.with_structured_output.return_value.invoke.return_value = mock_output
             MockLLM.return_value = mock_llm
 
-            agent = ClientAgent(profile=DEMO_CLIENT)
+            agent = ClientAgent(profile=_TEST_CLIENT)
             result = agent.run(make_state())
 
         assert result["is_satisfied"] is True
