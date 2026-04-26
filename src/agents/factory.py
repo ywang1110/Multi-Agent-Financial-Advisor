@@ -1,7 +1,6 @@
 from src.agents.advisor_agent import AdvisorAgent
 from src.agents.analyst_agent import AnalystAgent
 from src.agents.client_agent import ClientAgent
-from src.models.client_profile import ClientProfile
 from src.tools.analyst_tools import get_analyst_tools
 
 
@@ -12,8 +11,8 @@ class AgentFactory:
     """
 
     @staticmethod
-    def create_client_agent(profile: ClientProfile | None = None) -> ClientAgent:
-        return ClientAgent(profile=profile)
+    def create_client_agent() -> ClientAgent:
+        return ClientAgent()
 
     @staticmethod
     def create_advisor_agent() -> AdvisorAgent:

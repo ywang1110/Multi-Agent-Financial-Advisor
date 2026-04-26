@@ -23,6 +23,9 @@ htmlcov/
 # Chinese documentation (internal only)
 docs_cn/
 
+# Presentation slides (internal only)
+slides/
+
 # macOS
 .DS_Store
 

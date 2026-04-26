@@ -49,7 +49,7 @@ class TestClientAgent:
             mock_llm.with_structured_output.return_value.invoke.return_value = mock_output
             MockLLM.return_value = mock_llm
 
-            agent = ClientAgent(profile=_TEST_CLIENT)
+            agent = ClientAgent()
             result = agent.run(make_state())
 
         assert len(result["messages"]) == 1
@@ -70,7 +70,7 @@ class TestClientAgent:
             mock_llm.with_structured_output.return_value.invoke.return_value = mock_output
             MockLLM.return_value = mock_llm
 
-            agent = ClientAgent(profile=_TEST_CLIENT)
+            agent = ClientAgent()
             result = agent.run(make_state())
 
         assert result["is_satisfied"] is True

@@ -89,7 +89,7 @@ def build_graph(client_profile: ClientProfile) -> CompiledGraph:
     """
     advisor_agent = AgentFactory.create_advisor_agent()
     analyst_agent = AgentFactory.create_analyst_agent()
-    client_agent = AgentFactory.create_client_agent(client_profile)
+    client_agent = AgentFactory.create_client_agent()
 
     builder = StateGraph(ConversationState)
 
@@ -126,7 +126,7 @@ def build_graph_no_profile() -> CompiledGraph:
     """
     advisor_agent = AgentFactory.create_advisor_agent()
     analyst_agent = AgentFactory.create_analyst_agent()
-    client_agent = AgentFactory.create_client_agent(profile=None)
+    client_agent = AgentFactory.create_client_agent()
 
     builder = StateGraph(ConversationState)
 

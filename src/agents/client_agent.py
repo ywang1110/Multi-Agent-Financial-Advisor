@@ -20,13 +20,11 @@ class ClientAgent(BaseAgent):
     In production this node would be replaced by a human-in-the-loop UI.
     """
 
-    def __init__(self, profile: ClientProfile | None = None) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self._profile = profile
         self._structured_llm = self._llm.with_structured_output(ClientOutput)
 
     def run(self, state: ConversationState) -> dict:
-        # Always use the profile from state so Studio-submitted profiles override the default
         profile = state["client_profile"]
         system = SystemMessage(content=self._build_system_prompt(profile))
         response: ClientOutput = self._structured_llm.invoke(
