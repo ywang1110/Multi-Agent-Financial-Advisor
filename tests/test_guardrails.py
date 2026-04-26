@@ -29,7 +29,14 @@ class TestTurnLimitGuardrail:
 
 
 class TestOffTopicGuardrail:
-    """Tests for LLM-based OffTopicGuardrail — LLM is mocked to avoid real API calls."""
+    """
+    Tests for the two-stage OffTopicGuardrail.
+
+    Stage 1 — keyword fast-path: blocks obvious off-topic content without an LLM call.
+    Stage 2 — LLM semantic classifier: handles edge cases that keywords miss.
+
+    LLM is always injected via _make_guardrail to avoid real API calls.
+    """
 
     def _make_guardrail(self, llm_reply: str) -> "OffTopicGuardrail":
         """Return an OffTopicGuardrail whose internal LLM returns llm_reply."""
@@ -42,34 +49,56 @@ class TestOffTopicGuardrail:
         guardrail._llm = mock_llm
         return guardrail
 
-    def test_blocks_off_topic(self):
-        guardrail = self._make_guardrail("NO")
+    # --- Stage 1: keyword fast-path ---
+
+    def test_keyword_blocks_without_llm(self):
+        """Keyword hit should block immediately; LLM must not be called."""
+        guardrail = self._make_guardrail("YES")  # LLM would say YES, but must not be reached
         result = guardrail.check("Can you give me a recipe for pasta?")
         assert result.passed is False
-        assert "Off-topic" in result.reason
+        assert "recipe" in result.reason
+        guardrail._llm.invoke.assert_not_called()
 
-    def test_passes_financial_content(self):
+    def test_keyword_blocks_dating(self):
+        guardrail = self._make_guardrail("YES")
+        result = guardrail.check("Can you help me with dating advice?")
+        assert result.passed is False
+        guardrail._llm.invoke.assert_not_called()
+
+    def test_keyword_blocks_weather(self):
+        guardrail = self._make_guardrail("YES")
+        result = guardrail.check("What is the weather like today?")
+        assert result.passed is False
+        guardrail._llm.invoke.assert_not_called()
+
+    # --- Stage 2: LLM semantic classifier ---
+
+    def test_llm_blocks_subtle_off_topic(self):
+        """Content with no keyword match should fall through to LLM, which rejects it."""
+        guardrail = self._make_guardrail("NO")
+        result = guardrail.check("Tell me a joke about accountants.")
+        assert result.passed is False
+        assert "Off-topic" in result.reason
+        guardrail._llm.invoke.assert_called_once()
+
+    def test_llm_passes_financial_content(self):
         guardrail = self._make_guardrail("YES")
         result = guardrail.check("I want to invest in index funds for retirement.")
         assert result.passed is True
+        guardrail._llm.invoke.assert_called_once()
 
-    def test_passes_financial_content_with_liquidating(self):
-        # Previously caused false positive with keyword matching
+    def test_no_false_positive_on_liquidating(self):
+        """'liquidating' must not trigger keyword stage; LLM decides (YES)."""
         guardrail = self._make_guardrail("YES")
         result = guardrail.check("Consider gradually liquidating your Tesla position over 12 months.")
         assert result.passed is True
-
-    def test_blocks_dating_advice(self):
-        guardrail = self._make_guardrail("NO")
-        result = guardrail.check("Can you help me with dating advice?")
-        assert result.passed is False
+        guardrail._llm.invoke.assert_called_once()
 
     def test_llm_called_with_content(self):
         guardrail = self._make_guardrail("YES")
         content = "What ETFs should I buy?"
         guardrail.check(content)
         call_args = guardrail._llm.invoke.call_args[0][0]
-        # Last message in the list should contain the user content
         assert any(content in str(msg.content) for msg in call_args)
 
 

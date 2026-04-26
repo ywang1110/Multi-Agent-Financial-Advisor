@@ -1,3 +1,5 @@
+import json
+
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph as CompiledGraph
 
@@ -7,25 +9,76 @@ from src.models.client_profile import ClientProfile
 from src.models.state import ConversationState
 
 
+def _parse_profile_from_message(state: ConversationState) -> ClientProfile | None:
+    """
+    Fallback: when Studio Chat tab is used, the user's JSON input arrives as a
+    HumanMessage rather than a state key. Try to parse client_profile from the
+    content of the first message so the graph works in both Chat and State modes.
+    """
+    messages = state.get("messages") or []
+    print(f"[init] _parse_profile_from_message: {len(messages)} message(s) in state")
+    for i, msg in enumerate(messages):
+        # Handle both LangChain message objects and raw (type, content) tuples
+        if isinstance(msg, tuple):
+            content = msg[1] if len(msg) > 1 else None
+        else:
+            content = getattr(msg, "content", None)
+        print(f"[init] msg[{i}] type={type(msg).__name__}, content_type={type(content).__name__}, preview={str(content)[:120] if content else None}")
+        # Studio Chat sends content as a list of blocks: [{'type': 'text', 'text': '...'}]
+        if isinstance(content, list):
+            text_parts = [
+                block.get("text", "") for block in content
+                if isinstance(block, dict) and block.get("type") == "text"
+            ]
+            content = "".join(text_parts)
+        if not isinstance(content, str) or not content.strip():
+            continue
+        try:
+            data = json.loads(content.strip())
+            # Accept either {"client_profile": {...}} or the profile dict directly
+            profile_data = data.get("client_profile", data) if isinstance(data, dict) else None
+            if isinstance(profile_data, dict) and "name" in profile_data:
+                profile = ClientProfile.model_validate(profile_data)
+                print(f"[init] Successfully parsed client_profile for: {profile.name}")
+                return profile
+        except json.JSONDecodeError:
+            print(f"[init] msg[{i}] is not valid JSON, skipping")
+        except Exception as e:
+            print(f"[init] msg[{i}] JSON parsed but ClientProfile validation failed: {type(e).__name__}: {e}")
+    print("[init] No client_profile found in messages")
+    return None
+
+
 def _make_init_node(client_profile: ClientProfile | None = None):
     """
     Returns a node function that injects default values into state.
-    Also coerces client_profile from dict → ClientProfile when the state
-    arrives via the LangGraph API (Studio serializes it as a plain dict).
-    If client_profile is None, the profile must be supplied in the input state.
+    Handles three sources for client_profile (in priority order):
+      1. Closure argument (hardcoded profile via build_graph)
+      2. State key (Studio State-input panel, serialised as plain dict)
+      3. First message content (Studio Chat tab, user pastes JSON)
     """
     def init_state(state: ConversationState) -> dict:
         updates: dict = {}
 
-        # messages may be absent when Studio sends only client_profile
+        # messages may be absent when Studio sends only client_profile as a state key
         if not state.get("messages"):
             updates["messages"] = []
 
         raw_profile = state.get("client_profile")
         if raw_profile is None and client_profile is not None:
+            # Source 1: hardcoded profile
             updates["client_profile"] = client_profile
         elif isinstance(raw_profile, dict):
+            # Source 2: state key (Studio serialises Pydantic models as plain dicts)
             updates["client_profile"] = ClientProfile(**raw_profile)
+        elif raw_profile is None:
+            # Source 3: profile embedded in the first chat message (Studio Chat tab)
+            parsed = _parse_profile_from_message(state)
+            if parsed:
+                updates["client_profile"] = parsed
+                # Remove the profile message from the conversation so it is not
+                # treated as a client question by the advisor.
+                updates["messages"] = []
 
         if state.get("turn_count") is None:
             updates["turn_count"] = 0

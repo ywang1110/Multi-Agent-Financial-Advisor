@@ -149,7 +149,7 @@ The guardrail system uses the **Chain of Responsibility** pattern. Each node ind
 ```
 Advisor Output Chain:
   TurnLimitGuardrail → OffTopicGuardrail → PIIScrubbingGuardrail → DisclaimerGuardrail
-        ▲ short-circuits here if limit hit
+        ▲ breaks here if limit hit
 
 Client Input Chain:
   OffTopicGuardrail → PIIScrubbingGuardrail
@@ -158,11 +158,18 @@ Client Input Chain:
 | Guardrail | Mechanism | Action on Fail |
 |-----------|-----------|----------------|
 | `TurnLimitGuardrail` | Compares `current_turn` vs `MAX_CONVERSATION_TURNS` | Blocks message, triggers handoff routing |
-| `OffTopicGuardrail` | LLM semantic classifier (temperature=0, max_tokens=10) | Rejects with explanation |
+| `OffTopicGuardrail` | **Two-stage**: keyword fast-path → LLM semantic classifier | Rejects with explanation |
 | `PIIScrubbingGuardrail` | Regex patterns (SSN, card #, account #, email) | Redacts in-place, always passes |
 | `DisclaimerGuardrail` | Checks for existing disclaimer keyword | Appends regulatory disclaimer |
 
-**Design note:** `OffTopicGuardrail` uses LLM classification instead of keyword matching to handle paraphrasing (e.g., "liquidating a position" would falsely trigger a keyword filter on "liquid").
+**`OffTopicGuardrail` — two-stage design:**
+
+| Stage | Mechanism | Fires when |
+|-------|-----------|------------|
+| 1 — Keyword fast-path | Exact substring match against `OFF_TOPIC_KEYWORDS` | Obvious off-topic terms (`recipe`, `weather`, `dating`, …) |
+| 2 — LLM semantic classifier | `ChatOpenAI` (temperature=0, max_tokens=10) | No keyword matched; LLM makes the final call |
+
+Stage 1 blocks unambiguous off-topic content instantly with zero API cost. Stage 2 handles edge cases that keywords miss (e.g. "Tell me a joke about accountants"). The keyword list is intentionally conservative — only terms that can never appear in a financial context — so finance-adjacent words like "liquid" (in "liquidating a position") are never false-positived at Stage 1 and are correctly passed by the LLM at Stage 2.
 
 ---
 
@@ -279,7 +286,7 @@ The test suite covers all major components with **zero real API calls** (full mo
 | `test_tools.py` | Tavily formatting, ChromaDB init/rebuild/skip logic, tool registration |
 
 Notable test design choices:
-- `OffTopicGuardrail` is tested via direct `_llm` injection (no `patch` site collision)
+- `OffTopicGuardrail` is tested via direct `_llm` injection (no `patch` site collision); keyword fast-path tests assert `_llm.invoke` is **never called**
 - `ChromaDB` resilience tests use `tmp_path` to simulate corruption and healthy store
 - Turn limit is passed via `monkeypatch.setenv` to keep tests environment-independent
 

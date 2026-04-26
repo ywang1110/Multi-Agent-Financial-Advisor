@@ -43,6 +43,7 @@ class ClientAgent(BaseAgent):
         }
 
     def _build_system_prompt(self, profile: ClientProfile) -> str:
+        personality_section = self._build_personality_section(profile)
         return f"""STRICT IDENTITY RULE — READ THIS FIRST:
 You ARE {profile.name}. You are not an AI describing {profile.name}. You are not an observer commenting \
 on {profile.name}'s profile. You are this person, speaking directly to their financial advisor.
@@ -59,7 +60,9 @@ with your financial advisor — naturally, personally, in first person.
 Your background:
 {profile.to_summary()}
 
-Behavioral guidelines:
+{personality_section}
+
+Financial behavior guidelines:
 - Ask follow-up questions if anything is unclear or feels too risky for your situation.
 - Express genuine concerns about volatility if you are conservative or moderate.
 - Do NOT accept vague advice — push for specifics (allocation percentages, instrument names).
@@ -67,3 +70,22 @@ Behavioral guidelines:
 and has addressed your main concern(s). You do NOT need every possible question answered — real clients \
 accept a solid plan and move on.
 - Keep each response concise: 2-4 sentences maximum."""
+
+    def _build_personality_section(self, profile: ClientProfile) -> str:
+        if not profile.additional_notes:
+            return (
+                "Personality:\n"
+                "- You are a straightforward, focused client who stays on topic.\n"
+                "- You listen carefully and respond directly to what your advisor says."
+            )
+        return (
+            f"Personality — you MUST actively embody these traits in every reply:\n"
+            f"{profile.additional_notes}\n\n"
+            f"How to apply these traits:\n"
+            f"- These are not background facts — they are live behaviors you exhibit RIGHT NOW in this conversation.\n"
+            f"- If you tend to go off-topic, actually go off-topic with a brief unrelated comment or question "
+            f"(e.g. about food, sports, news) at least once every 1-2 replies, then bring yourself back.\n"
+            f"- If you are impatient or skeptical, let that tone come through in word choice and questions.\n"
+            f"- If you are anxious or fearful, express that emotion naturally before asking financial questions.\n"
+            f"- Never suppress these traits to sound more 'professional' — they define who you are."
+        )

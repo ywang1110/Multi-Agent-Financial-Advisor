@@ -27,6 +27,7 @@ class GuardrailResult:
     passed: bool
     content: str
     reason: str = ""
+    is_off_topic: bool = False
 
 
 class BaseGuardrail(ABC):
@@ -68,35 +69,79 @@ class TurnLimitGuardrail(BaseGuardrail):
 
 class OffTopicGuardrail(BaseGuardrail):
     """
-    Rejects messages unrelated to finance using LLM semantic classification.
-    More robust than keyword matching — handles paraphrasing and avoids false positives.
+    LLM-based off-topic filter.
+
+    Uses a semantic classifier to determine whether a message is related to financial
+    investment topics. This approach understands context, so everyday words used as
+    metaphors or analogies (e.g. "treat it like a recipe", "it's a game of patience")
+    are never incorrectly flagged as off-topic.
     """
 
     _SYSTEM_PROMPT = (
         "You are a content classifier for a financial investment advisory system. "
         "Decide if the message is related to financial investment, personal finance, "
-        "portfolio management, or wealth management.\n"
-        "Reply with exactly one word: YES if finance-related, NO if not."
+        "portfolio management, or wealth management.\n\n"
+        "Rules:\n"
+        "- Reply with exactly one word: YES if finance-related, NO if not.\n"
+        "- Everyday words used as metaphors or analogies in a financial context (e.g. "
+        "'treat it like a recipe', 'it's a game of patience', 'the weather in the market') "
+        "are finance-related — answer YES.\n"
+        "- Only answer NO when the message is genuinely off-topic and has no meaningful "
+        "connection to finance (e.g. asking for a cooking recipe, sports scores, "
+        "celebrity news, or medical advice)."
     )
 
-    def __init__(self, next_guardrail: "BaseGuardrail | None" = None) -> None:
+    def __init__(
+        self,
+        next_guardrail: "BaseGuardrail | None" = None,
+        soft_mode: bool = False,
+    ) -> None:
+        """
+        Args:
+            soft_mode: When True (used for client input), off-topic messages are passed
+                       through with an annotation rather than blocked. The advisor is then
+                       responsible for redirecting the conversation.
+                       When False (default, used for advisor output), off-topic content is
+                       blocked and replaced with a rejection reason.
+        """
         super().__init__(next_guardrail)
+        self._soft_mode = soft_mode
         settings = get_settings()
         self._llm = ChatOpenAI(model=settings.llm_model, temperature=0, max_tokens=10)
 
     def check(self, content: str) -> GuardrailResult:
+        # LLM semantic classifier — understands context so metaphors and analogies
+        # (e.g. "treat it like a recipe") are never incorrectly flagged as off-topic.
         response = self._llm.invoke([
             SystemMessage(content=self._SYSTEM_PROMPT),
             HumanMessage(content=content),
         ])
         verdict = response.content.strip().lower()
         if "no" in verdict:
-            return GuardrailResult(
-                passed=False,
-                content=content,
-                reason="Off-topic content detected. This system only handles financial investment topics.",
-            )
+            return self._off_topic_result(content, "Off-topic content detected.")
         return GuardrailResult(passed=True, content=content)
+
+    def _off_topic_result(self, content: str, reason: str) -> GuardrailResult:
+        if self._soft_mode:
+            # Pass the actual client message through but annotate it so the advisor
+            # can see what was said and take responsibility for steering back on topic.
+            annotated = (
+                f"[OFF-TOPIC — {reason} Please acknowledge briefly and redirect to financial matters.]\n"
+                f"{content}"
+            )
+            return GuardrailResult(
+                passed=True,
+                content=annotated,
+                reason=reason,
+                is_off_topic=True,
+            )
+        # Hard mode (advisor output): block and replace with rejection message
+        return GuardrailResult(
+            passed=False,
+            content=content,
+            reason=f"{reason} This system only handles financial investment topics.",
+            is_off_topic=True,
+        )
 
 
 class PIIScrubbingGuardrail(BaseGuardrail):
@@ -110,12 +155,10 @@ class PIIScrubbingGuardrail(BaseGuardrail):
 
 
 class DisclaimerGuardrail(BaseGuardrail):
-    """Appends a regulatory disclaimer to all advisor-facing outputs.
-    Skips if any disclaimer is already present (e.g. added by the LLM itself).
-    """
+    """Appends a regulatory disclaimer to all advisor-facing outputs."""
 
     def check(self, content: str) -> GuardrailResult:
-        if "disclaimer" not in content.lower():
+        if DISCLAIMER.strip() not in content:
             content = content + DISCLAIMER
         return GuardrailResult(passed=True, content=content)
 
@@ -135,8 +178,11 @@ def build_advisor_output_guardrails(current_turn: int) -> BaseGuardrail:
 def build_input_guardrails() -> BaseGuardrail:
     """
     Builds the guardrail chain for user/client inputs.
-    Order: OffTopic → PII Scrub
+    Order: OffTopic (soft) → PII Scrub
+
+    Off-topic client messages are NOT blocked — they are annotated and passed through
+    so the advisor can see the actual content and redirect the conversation naturally.
     """
     pii = PIIScrubbingGuardrail()
-    off_topic = OffTopicGuardrail(next_guardrail=pii)
+    off_topic = OffTopicGuardrail(next_guardrail=pii, soft_mode=True)
     return off_topic

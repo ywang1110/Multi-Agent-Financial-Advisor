@@ -54,15 +54,16 @@ class ClientProfile(BaseModel):
             if self.current_holdings
             else "None"
         )
-        return (
-            f"Client: {self.name}, Age: {self.age}\n"
-            f"Annual Income: ${self.annual_income_usd:,.0f} | "
-            f"Net Worth: ${self.net_worth_usd:,.0f}\n"
-            f"Risk Tolerance: {self.risk_tolerance.value} | "
-            f"Horizon: {self.investment_horizon_years} years\n"
-            f"Goals: {goals}\n"
-            f"Current Holdings: {holdings_summary}"
-        )
+        lines = [
+            f"Client: {self.name}, Age: {self.age}",
+            f"Annual Income: ${self.annual_income_usd:,.0f} | Net Worth: ${self.net_worth_usd:,.0f}",
+            f"Risk Tolerance: {self.risk_tolerance.value} | Horizon: {self.investment_horizon_years} years",
+            f"Goals: {goals}",
+            f"Current Holdings: {holdings_summary}",
+        ]
+        if self.additional_notes:
+            lines.append(f"Additional context: {self.additional_notes}")
+        return "\n".join(lines)
 
 
 

@@ -15,7 +15,7 @@ def _get_tavily_client() -> TavilyClient:
 def _make_concise(query: str) -> str:
     """Compress a verbose query into a concise search phrase using the LLM."""
     settings = get_settings()
-    llm = ChatOpenAI(model=settings.model_name, api_key=settings.openai_api_key, temperature=0)
+    llm = ChatOpenAI(model=settings.llm_model, api_key=settings.openai_api_key, temperature=0)
     prompt = (
         f"Rewrite the following into a concise financial search query under 300 characters. "
         f"Preserve all key financial terms and intent. Output only the rewritten query, nothing else.\n\n"
