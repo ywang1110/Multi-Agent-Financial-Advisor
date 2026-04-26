@@ -64,8 +64,8 @@ class TestRouteAfterClient:
         state = make_state(is_satisfied=False, turn_count=3)
         assert route_after_client(state) == "advisor"
 
-    def test_routes_to_handoff_when_satisfied_at_turn_limit(self, monkeypatch):
-        # Turn limit takes priority over is_satisfied — always route to handoff
+    def test_routes_to_end_when_satisfied_at_turn_limit(self, monkeypatch):
+        # is_satisfied takes priority over turn limit — satisfied client should END, not handoff
         monkeypatch.setenv("MAX_CONVERSATION_TURNS", "10")
         state = make_state(is_satisfied=True, turn_count=10)
-        assert route_after_client(state) == "handoff"
+        assert route_after_client(state) == END

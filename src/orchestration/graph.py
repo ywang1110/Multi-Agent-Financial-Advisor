@@ -61,18 +61,18 @@ def route_after_advisor(state: ConversationState) -> str:
 def route_after_client(state: ConversationState) -> str:
     """
     Decides next node after the Client responds.
-    - Client satisfied        → END
+    - Client satisfied        → END  (takes priority over turn limit)
     - Turn limit hit          → handoff (human agent takeover)
     - Otherwise               → advisor
     """
     settings = get_settings()
     turn_count = state.get("turn_count", 0)
 
-    # Turn limit takes absolute priority — even if client says satisfied
-    if turn_count >= settings.max_conversation_turns:
-        return "handoff"
+    # Satisfaction takes priority — no handoff needed if client is already happy
     if state.get("is_satisfied"):
         return END
+    if turn_count >= settings.max_conversation_turns:
+        return "handoff"
     return "advisor"
 
 
