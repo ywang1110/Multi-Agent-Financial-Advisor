@@ -28,7 +28,7 @@ End-to-end multi-agent financial advisor workflow.
 - System detects satisfaction and terminates automatically  
 
 👉 60-second walkthrough:  
-[![Watch Demo](assets/thumbnail.png)](assets/demo.mp4)
+[![Watch Demo](assets/thumbnail.png)](https://github.com/user-attachments/assets/75efbbcb-833b-46a7-84b8-98caca51def3)
 
 ---
 
