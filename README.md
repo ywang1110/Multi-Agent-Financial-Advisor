@@ -29,8 +29,8 @@ End-to-end multi-agent financial advisor workflow.
 👉 Click to watch — 60-second walkthrough 📹:
 [![Watch Demo](assets/thumbnail-v2.png)](https://github.com/user-attachments/assets/75efbbcb-833b-46a7-84b8-98caca51def3)
 
-> 📺 Can't play the video? [Watch on YouTube](https://youtu.be/Z3m8YG2grb0)
-
+> 📺 Can't play the video?
+> [![Watch on YouTube](https://img.shields.io/badge/Watch%20on%20YouTube-FF0000?style=flat-square&logo=youtube&logoColor=white)](https://youtu.be/Z3m8YG2grb0)
 ---
 
 ## 2. Graph Flow
