@@ -1,4 +1,5 @@
-# Multi-Agent Financial Advisor — Design Overview
+![banner](assets/banner.png)
+# Multi-Agent Financial Advisor
 
 > **Audience:** Reviewers who want a fast, accurate picture of the architecture, key design decisions, and where the system can grow.
 
