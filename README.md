@@ -19,7 +19,7 @@ The entire flow runs autonomously — the client is simulated by an LLM persona.
 
 ---
 
-## 🎬 System Demo
+### 🎬 System Demo
 
 End-to-end multi-agent financial advisor workflow.
 
@@ -29,7 +29,7 @@ End-to-end multi-agent financial advisor workflow.
 - System detects satisfaction and terminates automatically  
 
 👉 Click to watch — 60-second walkthroug 📹:  
-[![Watch Demo](assets/thumbnail.png)](https://github.com/user-attachments/assets/75efbbcb-833b-46a7-84b8-98caca51def3)
+[![Watch Demo](assets/thumbnail-v2.png)](https://github.com/user-attachments/assets/75efbbcb-833b-46a7-84b8-98caca51def3)
 
 ---
 
