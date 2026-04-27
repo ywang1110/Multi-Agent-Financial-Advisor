@@ -17,8 +17,6 @@ Given a client profile (risk tolerance, holdings, goals), the system:
 
 The entire flow runs autonomously — the client is simulated by an LLM persona. A human agent is only involved as a fallback when the turn limit is reached and the client remains unsatisfied.
 
----
-
 ### 🎬 System Demo
 
 End-to-end multi-agent financial advisor workflow.
