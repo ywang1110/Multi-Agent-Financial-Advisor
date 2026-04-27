@@ -27,8 +27,8 @@ End-to-end multi-agent financial advisor workflow.
 - Analyst performs on-demand research  
 - System detects satisfaction and terminates automatically  
 
-👉 60-second walkthrough:  
-[![Watch Demo](assets/thumbnail.png)](assets/demo.mp4)
+[![▶ Click to watch the 60-second demo](assets/thumbnail.png)](assets/demo.mp4)
+*▶ Click to watch — 60-second walkthrough*
 
 ---
 
